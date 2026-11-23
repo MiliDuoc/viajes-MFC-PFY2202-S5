@@ -3,6 +3,7 @@ import { useQuery } from "@apollo/client/react"
 
 import {
   Alert,
+  AlertTitle,
   Box,
   Button,
   Checkbox,
@@ -23,9 +24,6 @@ import { useState } from "react"
 
 import EstadoCarga
   from "../components/EstadoCarga"
-
-import ErrorPeticion
-  from "../components/ErrorPeticion"
 
 import HotelCard
   from "../components/HotelCard"
@@ -123,6 +121,11 @@ function DestinoDetalle() {
     setErrorSimulado
   ] = useState("")
 
+  const [
+    cargandoError,
+    setCargandoError
+  ] = useState(false)
+
   const destino =
     datosDestino[id]
 
@@ -137,6 +140,7 @@ function DestinoDetalle() {
       variables: {
         destino: id
       },
+
       fetchPolicy:
         "cache-and-network"
     }
@@ -146,81 +150,90 @@ function DestinoDetalle() {
     async () => {
       setErrorSimulado("")
 
-      if (simularError) {
+      if (!simularError) {
         try {
-          const respuesta =
-            await fetch(
-              `${import.meta.env.BASE_URL}graphql`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type":
-                    "application/json",
-
-                  "X-Simular-Error":
-                    "true"
-                },
-
-                body:
-                  JSON.stringify({
-                    query: `
-                      query GetOpcionesViaje(
-                        $destino: String!
-                      ) {
-                        opcionesViaje(
-                          destino: $destino
-                        ) {
-                          vuelos {
-                            id
-                          }
-
-                          hoteles {
-                            id
-                          }
-                        }
-                      }
-                    `,
-
-                    variables: {
-                      destino: id
-                    }
-                  })
-              }
-            )
-
-          const resultado =
-            await respuesta.json()
-
-          if (
-            resultado.errors &&
-            resultado.errors.length > 0
-          ) {
-            setErrorSimulado(
-              resultado.errors[0].message
-            )
-          }
+          await refetch()
         } catch {
-          setErrorSimulado(
-            "No fue posible conectar con el servicio GraphQL."
-          )
+          // Apollo administra el error.
         }
 
         return
       }
 
+      setCargandoError(true)
+
       try {
-        await refetch()
+        const respuesta =
+          await fetch(
+            `${import.meta.env.BASE_URL}graphql`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                "X-Simular-Error":
+                  "true"
+              },
+
+              body:
+                JSON.stringify({
+                  query: `
+                    query GetOpcionesViaje(
+                      $destino: String!
+                    ) {
+                      opcionesViaje(
+                        destino: $destino
+                      ) {
+                        vuelos {
+                          id
+                        }
+
+                        hoteles {
+                          id
+                        }
+                      }
+                    }
+                  `,
+
+                  variables: {
+                    destino: id
+                  }
+                })
+            }
+          )
+
+        const resultado =
+          await respuesta.json()
+
+        if (
+          resultado.errors &&
+          resultado.errors.length
+        ) {
+          setErrorSimulado(
+            resultado.errors[0].message
+          )
+        }
       } catch {
-        // Apollo muestra el error
-        // mediante la variable "error".
+        setErrorSimulado(
+          "No fue posible conectar con el servicio GraphQL."
+        )
+      } finally {
+        setCargandoError(false)
       }
     }
 
-  const reintentarSimulado =
-    () => {
+  const reintentarConsulta =
+    async () => {
       setSimularError(false)
       setErrorSimulado("")
-      refetch()
+
+      try {
+        await refetch()
+      } catch {
+        // Apollo controla el error real.
+      }
     }
 
   if (loading && !data) {
@@ -232,30 +245,15 @@ function DestinoDetalle() {
     )
   }
 
-  if (error) {
+  if (error && !data) {
     return (
-      <Box>
-        <ErrorPeticion
-          mensaje={
-            error.message ||
-            "No fue posible consultar las opciones de viaje."
-          }
-          onReintentar={
-            () => refetch()
-          }
-        />
+      <Alert severity="error">
+        <AlertTitle>
+          No pudimos consultar las opciones de viaje
+        </AlertTitle>
 
-        <Button
-          component={Link}
-          to="/"
-          sx={{
-            mt: 2,
-            color: "#00695c"
-          }}
-        >
-          Volver a destinos
-        </Button>
-      </Box>
+        {error.message}
+      </Alert>
     )
   }
 
@@ -358,18 +356,17 @@ function DestinoDetalle() {
       <Box
         sx={{
           display: "flex",
-
           justifyContent:
             "space-between",
-
-          alignItems: {
-            xs: "flex-start",
-            md: "center"
-          },
 
           flexDirection: {
             xs: "column",
             md: "row"
+          },
+
+          alignItems: {
+            xs: "flex-start",
+            md: "center"
           },
 
           gap: 2,
@@ -395,16 +392,14 @@ function DestinoDetalle() {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1,
-            flexWrap: "wrap"
+            flexWrap: "wrap",
+            gap: 1
           }}
         >
           <FormControlLabel
             control={
               <Checkbox
-                checked={
-                  simularError
-                }
+                checked={simularError}
 
                 onChange={(evento) =>
                   setSimularError(
@@ -430,149 +425,176 @@ function DestinoDetalle() {
         </Box>
       </Box>
 
-      {errorSimulado && (
-        <Box sx={{ mb: 3 }}>
-          <ErrorPeticion
-            mensaje={
-              errorSimulado
-            }
-            onReintentar={
-              reintentarSimulado
-            }
-          />
-        </Box>
+      {cargandoError && (
+        <EstadoCarga
+          mensaje=
+            "Consultando servicio GraphQL..."
+        />
       )}
 
-      <Paper
-        variant="outlined"
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden"
-        }}
-      >
-        <Tabs
-          value={tab}
+      {!cargandoError &&
+        errorSimulado && (
+          <Alert
+            severity="error"
+            sx={{
+              mb: 3,
+              py: 1
+            }}
+          >
+            <AlertTitle
+              sx={{
+                fontWeight: 800
+              }}
+            >
+              No pudimos consultar las opciones de viaje
+            </AlertTitle>
 
-          onChange={(
-            _,
-            nuevoValor
-          ) =>
-            setTab(
-              nuevoValor
-            )
-          }
+            <Typography
+              variant="body2"
+              sx={{ mb: 2 }}
+            >
+              {errorSimulado}
+            </Typography>
 
-          variant="fullWidth"
-          textColor="primary"
-          indicatorColor="primary"
-        >
-          <Tab
-            label={
-              `Vuelos (${vuelos.length})`
-            }
-          />
+            <Button
+              variant="contained"
+              color="error"
+              onClick={
+                reintentarConsulta
+              }
+            >
+              Reintentar consulta
+            </Button>
+          </Alert>
+        )}
 
-          <Tab
-            label={
-              `Hoteles (${hoteles.length})`
-            }
-          />
-        </Tabs>
+      {!cargandoError &&
+        !errorSimulado && (
+          <Paper
+            variant="outlined"
+            sx={{
+              borderRadius: 3,
+              overflow: "hidden"
+            }}
+          >
+            <Tabs
+              value={tab}
 
-        <Box sx={{ p: 3 }}>
-          {tab === 0 && (
-            <>
-              {vuelos.length === 0
-                ? (
-                  <Alert
-                    severity="info"
-                  >
-                    No hay vuelos disponibles para este destino.
-                  </Alert>
+              onChange={(
+                _,
+                nuevoValor
+              ) =>
+                setTab(
+                  nuevoValor
                 )
-                : (
-                  <Box
-                    sx={{
-                      display:
-                        "grid",
+              }
 
-                      gridTemplateColumns:
-                        {
-                          xs:
-                            "1fr",
+              variant="fullWidth"
+            >
+              <Tab
+                label={
+                  `Vuelos (${vuelos.length})`
+                }
+              />
 
-                          md:
-                            "repeat(2, 1fr)"
-                        },
+              <Tab
+                label={
+                  `Hoteles (${hoteles.length})`
+                }
+              />
+            </Tabs>
 
-                      gap: 2
-                    }}
-                  >
-                    {vuelos.map(
-                      (vuelo) => (
-                        <VueloCard
-                          key={
-                            vuelo.id
-                          }
+            <Box sx={{ p: 3 }}>
+              {tab === 0 &&
+                (
+                  vuelos.length === 0
+                    ? (
+                      <Alert
+                        severity="info"
+                      >
+                        No hay vuelos disponibles para este destino.
+                      </Alert>
+                    )
+                    : (
+                      <Box
+                        sx={{
+                          display:
+                            "grid",
 
-                          vuelo={
-                            vuelo
-                          }
-                        />
-                      )
-                    )}
-                  </Box>
+                          gridTemplateColumns:
+                            {
+                              xs:
+                                "1fr",
+
+                              md:
+                                "repeat(2, 1fr)"
+                            },
+
+                          gap: 2
+                        }}
+                      >
+                        {vuelos.map(
+                          (vuelo) => (
+                            <VueloCard
+                              key={
+                                vuelo.id
+                              }
+                              vuelo={
+                                vuelo
+                              }
+                            />
+                          )
+                        )}
+                      </Box>
+                    )
                 )}
-            </>
-          )}
 
-          {tab === 1 && (
-            <>
-              {hoteles.length === 0
-                ? (
-                  <Alert
-                    severity="info"
-                  >
-                    No hay hoteles disponibles para este destino.
-                  </Alert>
-                )
-                : (
-                  <Box
-                    sx={{
-                      display:
-                        "grid",
+              {tab === 1 &&
+                (
+                  hoteles.length === 0
+                    ? (
+                      <Alert
+                        severity="info"
+                      >
+                        No hay hoteles disponibles para este destino.
+                      </Alert>
+                    )
+                    : (
+                      <Box
+                        sx={{
+                          display:
+                            "grid",
 
-                      gridTemplateColumns:
-                        {
-                          xs:
-                            "1fr",
+                          gridTemplateColumns:
+                            {
+                              xs:
+                                "1fr",
 
-                          md:
-                            "repeat(2, 1fr)"
-                        },
+                              md:
+                                "repeat(2, 1fr)"
+                            },
 
-                      gap: 2
-                    }}
-                  >
-                    {hoteles.map(
-                      (hotel) => (
-                        <HotelCard
-                          key={
-                            hotel.id
-                          }
-
-                          hotel={
-                            hotel
-                          }
-                        />
-                      )
-                    )}
-                  </Box>
+                          gap: 2
+                        }}
+                      >
+                        {hoteles.map(
+                          (hotel) => (
+                            <HotelCard
+                              key={
+                                hotel.id
+                              }
+                              hotel={
+                                hotel
+                              }
+                            />
+                          )
+                        )}
+                      </Box>
+                    )
                 )}
-            </>
-          )}
-        </Box>
-      </Paper>
+            </Box>
+          </Paper>
+        )}
     </Box>
   )
 }

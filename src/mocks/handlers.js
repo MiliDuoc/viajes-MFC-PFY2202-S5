@@ -164,8 +164,22 @@ const opciones = {
 }
 
 export const handlers = [
-  http.get("*/api/destinos", async () => {
+  http.get("*/api/destinos", async ({ request }) => {
     await delay(700)
+
+    const url = new URL(request.url)
+
+    if (url.searchParams.get("error") === "500") {
+      return HttpResponse.json(
+        {
+          mensaje:
+            "No fue posible obtener los destinos."
+        },
+        {
+          status: 500
+        }
+      )
+    }
 
     return HttpResponse.json(destinos)
   }),
@@ -183,21 +197,21 @@ export const handlers = [
           errors: [
             {
               message:
-                "Error simulado al consultar vuelos y hoteles mediante GraphQL."
+                "Error simulado del servidor GraphQL."
             }
           ]
         })
       }
 
-      const { destino } = variables
-      const resultado = opciones[destino]
+      const resultado =
+        opciones[variables.destino]
 
       if (!resultado) {
         return HttpResponse.json({
           errors: [
             {
               message:
-                "No se encontraron opciones para el destino seleccionado."
+                "No se encontraron opciones para este destino."
             }
           ]
         })

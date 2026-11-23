@@ -1,89 +1,59 @@
-import {
-  AppBar,
-  Box,
-  Container,
-  Toolbar,
-  Typography,
-  Button
-} from "@mui/material"
-
-import { Link } from "react-router"
-import AppRoutes from "./routes/AppRoutes"
-
-function App() {
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        backgroundColor: "#f7f9fb"
-      }}
-    >
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{
-          backgroundColor: "white",
-          color: "#004d40",
-          borderBottom: "1px solid #e5e7eb"
-        }}
-      >
-        <Container maxWidth="lg">
-          <Toolbar
-            disableGutters
-            sx={{
-              justifyContent: "space-between"
-            }}
-          >
-            <Typography
-              component={Link}
-              to="/"
-              variant="h6"
-              sx={{
-                color: "#004d40",
-                textDecoration: "none",
-                fontWeight: 800
-              }}
-            >
-              Viajes MFC
-            </Typography>
-
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                component={Link}
-                to="/"
-                color="inherit"
-              >
-                Inicio
-              </Button>
-
-              <Button
-                component={Link}
-                to="/"
-                variant="contained"
-                sx={{
-                  backgroundColor: "#e0f2f1",
-                  color: "#00695c",
-                  boxShadow: "none",
-                  "&:hover": {
-                    backgroundColor: "#b2dfdb"
-                  }
-                }}
-              >
-                Destinos
-              </Button>
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
-
-      <Container
-        maxWidth="lg"
-        sx={{ py: 5 }}
-      >
-        <AppRoutes />
-      </Container>
-    </Box>
-  )
+#root {
+  min-height: 100vh;
 }
 
-export default App
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f5f7f8;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Scrollbar opcional */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #eef2f3;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #80cbc4;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4db6ac;
+}
+
+/* Ajustes responsive generales */
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+}

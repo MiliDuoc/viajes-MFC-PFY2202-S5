@@ -1,4 +1,6 @@
 ﻿import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Checkbox,
@@ -6,40 +8,66 @@
   Typography
 } from "@mui/material"
 
-import { useCallback } from "react"
+import {
+  useEffect,
+  useState
+} from "react"
 
-import DestinoCard from "../components/DestinoCard"
-import EstadoCarga from "../components/EstadoCarga"
-import ErrorPeticion from "../components/ErrorPeticion"
-import usePeticion from "../hooks/usePeticion"
-import { obtenerDestinos } from "../services/destinosApi"
+import DestinoCard
+  from "../components/DestinoCard"
+
+import EstadoCarga
+  from "../components/EstadoCarga"
+
+import {
+  obtenerDestinos
+} from "../services/destinosApi"
 
 function Inicio() {
-  const cargar = useCallback(
-    (signal) => obtenerDestinos(signal),
-    []
-  )
+  const [destinos, setDestinos] =
+    useState([])
 
-  const {
-    datos,
-    cargando,
-    error,
-    reintentar
-  } = usePeticion(cargar)
+  const [cargando, setCargando] =
+    useState(true)
 
-  if (cargando) {
-    return (
-      <EstadoCarga mensaje="Consultando destinos mediante REST..." />
-    )
-  }
+  const [error, setError] =
+    useState("")
 
-  if (error) {
-    return (
-      <ErrorPeticion
-        mensaje={error}
-        onReintentar={reintentar}
-      />
-    )
+  const [
+    simularError,
+    setSimularError
+  ] = useState(false)
+
+  const cargarDestinos =
+    async (
+      usarError = simularError
+    ) => {
+      setCargando(true)
+      setError("")
+
+      try {
+        const datos =
+          await obtenerDestinos({
+            simularError: usarError
+          })
+
+        setDestinos(datos)
+      } catch (errorPeticion) {
+        setError(
+          errorPeticion.message
+        )
+      } finally {
+        setCargando(false)
+      }
+    }
+
+  useEffect(() => {
+    cargarDestinos(false)
+  }, [])
+
+  const reintentar = async () => {
+    setSimularError(false)
+    await cargarDestinos(false)
   }
 
   return (
@@ -66,49 +94,106 @@ function Inicio() {
         color="text.secondary"
         sx={{ mb: 2 }}
       >
-        Explora destinos únicos en Chile y encuentra vuelos y hoteles
-        para planificar tu próxima aventura.
+        Explora destinos únicos en Chile y encuentra
+        vuelos y hoteles para planificar tu próxima aventura.
       </Typography>
 
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 1,
+          flexWrap: "wrap",
+          gap: 2,
           mb: 3
         }}
       >
         <FormControlLabel
-          control={<Checkbox size="small" />}
+          control={
+            <Checkbox
+              checked={simularError}
+              onChange={(evento) =>
+                setSimularError(
+                  evento.target.checked
+                )
+              }
+              size="small"
+            />
+          }
           label="Simular error del servidor"
         />
 
         <Button
           variant="outlined"
-          color="primary"
-          onClick={reintentar}
+          onClick={() =>
+            cargarDestinos(
+              simularError
+            )
+          }
         >
           Actualizar destinos
         </Button>
       </Box>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            md: "repeat(2, 1fr)"
-          },
-          gap: 2
-        }}
-      >
-        {datos?.map((destino) => (
-          <DestinoCard
-            key={destino.id}
-            destino={destino}
-          />
-        ))}
-      </Box>
+      {cargando && (
+        <EstadoCarga
+          mensaje="Consultando destinos mediante REST..."
+        />
+      )}
+
+      {!cargando && error && (
+        <Alert
+          severity="error"
+          sx={{
+            mb: 3,
+            py: 1
+          }}
+        >
+          <AlertTitle
+            sx={{
+              fontWeight: 800
+            }}
+          >
+            No pudimos cargar los destinos
+          </AlertTitle>
+
+          <Typography
+            variant="body2"
+            sx={{ mb: 2 }}
+          >
+            {error}
+          </Typography>
+
+          <Button
+            variant="contained"
+            color="error"
+            onClick={reintentar}
+          >
+            Reintentar
+          </Button>
+        </Alert>
+      )}
+
+      {!cargando && !error && (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "repeat(2, 1fr)"
+            },
+            gap: 2
+          }}
+        >
+          {destinos.map(
+            (destino) => (
+              <DestinoCard
+                key={destino.id}
+                destino={destino}
+              />
+            )
+          )}
+        </Box>
+      )}
     </Box>
   )
 }
