@@ -1,11 +1,12 @@
 ﻿import {
   Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
   Typography
 } from "@mui/material"
 
-import {
-  useCallback
-} from "react"
+import { useCallback } from "react"
 
 import DestinoCard from "../components/DestinoCard"
 import EstadoCarga from "../components/EstadoCarga"
@@ -44,21 +45,52 @@ function Inicio() {
   return (
     <Box>
       <Typography
-        variant="h3"
-        fontWeight="bold"
-        gutterBottom
+        variant="overline"
+        sx={{
+          color: "#00796b",
+          fontWeight: 800
+        }}
       >
-        Viajes MFC
+        EXPLORA CHILE
       </Typography>
 
       <Typography
-        variant="h6"
-        color="text.secondary"
-        sx={{ mb: 4 }}
+        variant="h3"
+        fontWeight={800}
+        gutterBottom
       >
-        Explora destinos en Chile y revisa
-        vuelos y hoteles disponibles.
+        Destinos disponibles
       </Typography>
+
+      <Typography
+        color="text.secondary"
+        sx={{ mb: 2 }}
+      >
+        Explora destinos únicos en Chile y encuentra vuelos y hoteles
+        para planificar tu próxima aventura.
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          mb: 3
+        }}
+      >
+        <FormControlLabel
+          control={<Checkbox size="small" />}
+          label="Simular error del servidor"
+        />
+
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={reintentar}
+        >
+          Actualizar destinos
+        </Button>
+      </Box>
 
       <Box
         sx={{
@@ -67,7 +99,7 @@ function Inicio() {
             xs: "1fr",
             md: "repeat(2, 1fr)"
           },
-          gap: 3
+          gap: 2
         }}
       >
         {datos?.map((destino) => (

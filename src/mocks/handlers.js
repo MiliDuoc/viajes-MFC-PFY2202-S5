@@ -1,33 +1,58 @@
-﻿import { delay, graphql, http, HttpResponse } from "msw"
+﻿import {
+  delay,
+  graphql,
+  http,
+  HttpResponse
+} from "msw"
 
 const destinos = [
   {
     id: "san-pedro",
     ciudad: "San Pedro de Atacama",
     pais: "Chile",
-    descripcion: "Desierto, paisajes altiplánicos y cielos privilegiados.",
-    actividades: ["Valle de la Luna", "Géiseres del Tatio", "Lagunas Altiplánicas"]
+    descripcion:
+      "Desierto, paisajes altiplánicos y cielos privilegiados.",
+    actividades: [
+      "Valle de la Luna",
+      "Géiseres del Tatio",
+      "Lagunas Altiplánicas"
+    ]
   },
   {
     id: "puerto-varas",
     ciudad: "Puerto Varas",
     pais: "Chile",
-    descripcion: "Naturaleza, volcanes y lagos del sur de Chile.",
-    actividades: ["Lago Llanquihue", "Volcán Osorno", "Saltos del Petrohué"]
+    descripcion:
+      "Naturaleza, volcanes y lagos del sur de Chile.",
+    actividades: [
+      "Lago Llanquihue",
+      "Volcán Osorno",
+      "Saltos del Petrohué"
+    ]
   },
   {
     id: "torres-del-paine",
     ciudad: "Torres del Paine",
     pais: "Chile",
-    descripcion: "Uno de los destinos naturales más reconocidos de la Patagonia.",
-    actividades: ["Trekking", "Miradores", "Glaciares"]
+    descripcion:
+      "Uno de los destinos naturales más reconocidos de la Patagonia.",
+    actividades: [
+      "Trekking",
+      "Miradores",
+      "Glaciares"
+    ]
   },
   {
     id: "valparaiso",
     ciudad: "Valparaíso",
     pais: "Chile",
-    descripcion: "Patrimonio, cerros, arte urbano y costa del Pacífico.",
-    actividades: ["Cerro Alegre", "Ascensores", "Paseo Yugoslavo"]
+    descripcion:
+      "Patrimonio, cerros, arte urbano y costa del Pacífico.",
+    actividades: [
+      "Cerro Alegre",
+      "Ascensores",
+      "Paseo Yugoslavo"
+    ]
   }
 ]
 
@@ -141,29 +166,48 @@ const opciones = {
 export const handlers = [
   http.get("*/api/destinos", async () => {
     await delay(700)
+
     return HttpResponse.json(destinos)
   }),
 
-  graphql.query("GetOpcionesViaje", async ({ variables }) => {
-    await delay(900)
+  graphql.query(
+    "GetOpcionesViaje",
+    async ({ variables, request }) => {
+      await delay(900)
 
-    const { destino } = variables
-    const resultado = opciones[destino]
+      const simularError =
+        request.headers.get("X-Simular-Error")
 
-    if (!resultado) {
+      if (simularError === "true") {
+        return HttpResponse.json({
+          errors: [
+            {
+              message:
+                "Error simulado al consultar vuelos y hoteles mediante GraphQL."
+            }
+          ]
+        })
+      }
+
+      const { destino } = variables
+      const resultado = opciones[destino]
+
+      if (!resultado) {
+        return HttpResponse.json({
+          errors: [
+            {
+              message:
+                "No se encontraron opciones para el destino seleccionado."
+            }
+          ]
+        })
+      }
+
       return HttpResponse.json({
-        errors: [
-          {
-            message: "No se encontraron opciones para el destino seleccionado."
-          }
-        ]
+        data: {
+          opcionesViaje: resultado
+        }
       })
     }
-
-    return HttpResponse.json({
-      data: {
-        opcionesViaje: resultado
-      }
-    })
-  })
+  )
 ]

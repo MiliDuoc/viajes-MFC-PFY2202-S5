@@ -3,7 +3,8 @@
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#00695c"
+      main: "#00695c",
+      dark: "#004d40"
     },
     secondary: {
       main: "#ef6c00"
@@ -14,7 +15,12 @@ const theme = createTheme({
   },
 
   shape: {
-    borderRadius: 12
+    borderRadius: 14
+  },
+
+  typography: {
+    fontFamily:
+      '"Segoe UI", Arial, sans-serif'
   }
 })
 

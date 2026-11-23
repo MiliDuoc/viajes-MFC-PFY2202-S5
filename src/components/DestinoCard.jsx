@@ -1,9 +1,8 @@
 ﻿import {
+  Button,
   Card,
-  CardActionArea,
   CardContent,
-  Chip,
-  Stack,
+  Divider,
   Typography
 } from "@mui/material"
 
@@ -12,61 +11,99 @@ import { Link } from "react-router"
 function DestinoCard({ destino }) {
   return (
     <Card
-      elevation={3}
+      variant="outlined"
       sx={{
         height: "100%",
-        transition: "0.2s",
-        "&:hover": {
-          transform: "translateY(-4px)"
-        }
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "white"
       }}
     >
-      <CardActionArea
-        component={Link}
-        to={`/destino/${destino.id}`}
-        sx={{ height: "100%" }}
+      <CardContent
+        sx={{
+          p: 3,
+          flexGrow: 1
+        }}
       >
-        <CardContent>
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            gutterBottom
-          >
-            {destino.ciudad}
-          </Typography>
+        <Typography
+          variant="overline"
+          sx={{
+            color: "#00796b",
+            fontWeight: 800
+          }}
+        >
+          CHILE
+        </Typography>
 
-          <Typography
-            color="primary"
-            fontWeight="bold"
-          >
-            {destino.pais}
-          </Typography>
+        <Typography
+          variant="h5"
+          fontWeight={800}
+        >
+          {destino.ciudad}
+        </Typography>
 
-          <Typography
-            color="text.secondary"
-            sx={{ my: 2 }}
-          >
-            {destino.descripcion}
-          </Typography>
+        <Typography
+          color="text.secondary"
+          sx={{ mb: 2 }}
+        >
+          {destino.pais}
+        </Typography>
 
-          <Stack
-            direction="row"
-            gap={1}
-            flexWrap="wrap"
-          >
-            {destino.actividades.map(
-              (actividad) => (
-                <Chip
-                  key={actividad}
-                  label={actividad}
-                  size="small"
-                />
-              )
-            )}
-          </Stack>
-        </CardContent>
-      </CardActionArea>
+        <Typography
+          variant="body2"
+          sx={{ mb: 2 }}
+        >
+          {destino.descripcion}
+        </Typography>
+
+        <Typography
+          fontWeight={700}
+          variant="body2"
+          sx={{ mb: 1 }}
+        >
+          Actividades populares
+        </Typography>
+
+        <BoxLista actividades={destino.actividades} />
+
+        <Divider sx={{ my: 2 }} />
+
+        <Button
+          component={Link}
+          to={`/destino/${destino.id}`}
+          variant="contained"
+          fullWidth
+          sx={{
+            backgroundColor: "#00695c",
+            "&:hover": {
+              backgroundColor: "#004d40"
+            }
+          }}
+        >
+          Ver vuelos y hoteles
+        </Button>
+      </CardContent>
     </Card>
+  )
+}
+
+function BoxLista({ actividades }) {
+  return (
+    <ul
+      style={{
+        margin: 0,
+        paddingLeft: "20px"
+      }}
+    >
+      {actividades.map((actividad) => (
+        <li key={actividad}>
+          <Typography variant="body2">
+            {actividad}
+          </Typography>
+        </li>
+      ))}
+    </ul>
   )
 }
 
