@@ -3,8 +3,9 @@
   Routes
 } from "react-router"
 
-import DestinoDetalle from "../pages/DestinoDetalle"
+import Home from "../pages/Home"
 import Inicio from "../pages/Inicio"
+import DestinoDetalle from "../pages/DestinoDetalle"
 import NoEncontrado from "../pages/NoEncontrado"
 
 function AppRoutes() {
@@ -12,6 +13,11 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/"
+        element={<Home />}
+      />
+
+      <Route
+        path="/destinos"
         element={<Inicio />}
       />
 

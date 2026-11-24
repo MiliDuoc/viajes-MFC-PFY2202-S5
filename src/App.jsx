@@ -53,33 +53,23 @@ function App() {
               }}
             >
               <Button
-                component={Link}
-                to="/"
-                sx={{
-                  color: "white"
-                }}
-              >
-                Inicio
-              </Button>
+  component={Link}
+  to="/"
+>
+  Inicio
+</Button>
 
-              <Button
-                component={Link}
-                to="/"
-                variant="outlined"
-                sx={{
-                  color: "white",
-                  borderColor:
-                    "rgba(255,255,255,0.7)",
-
-                  "&:hover": {
-                    borderColor: "white",
-                    backgroundColor:
-                      "rgba(255,255,255,0.08)"
-                  }
-                }}
-              >
-                Destinos
-              </Button>
+<Button
+  component={Link}
+  to="/destinos"
+  variant="outlined"
+  sx={{
+    color: "white",
+    borderColor: "rgba(255,255,255,0.7)"
+  }}
+>
+  Destinos
+</Button>
             </Box>
           </Toolbar>
         </Container>
